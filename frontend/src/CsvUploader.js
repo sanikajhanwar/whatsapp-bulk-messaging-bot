@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE_URL } from './config';
 
 export default function CsvUploader() {
   const [file, setFile] = useState(null);
@@ -29,7 +30,7 @@ export default function CsvUploader() {
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:3000/api/upload-campaign', {
+      const res = await fetch('\${BASE_URL}/api/upload-campaign', {
         method: 'POST',
         body: formData,
       });
@@ -60,7 +61,7 @@ export default function CsvUploader() {
     setIsSyncing(true);
     
     try {
-      const res = await fetch('http://localhost:3000/api/sync-all-groups', {
+      const res = await fetch('\${BASE_URL}/api/sync-all-groups', {
         method: 'POST',
       });
 
@@ -85,7 +86,7 @@ const sendMessages = async () => {
   setSendError('');
 
   try {
-    const res = await fetch('http://localhost:3000/api/start-campaign', {
+    const res = await fetch('\${BASE_URL}/api/start-campaign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // Send the entire messages array at once

@@ -1,6 +1,7 @@
 // frontend/src/WhatsAppQRModal.jsx
 import React, { useEffect, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { BASE_URL } from './config';
 
 export default function WhatsAppQRModal({ employeeId, onClose }) {
   const [qr, setQr] = useState(null);
@@ -11,7 +12,7 @@ export default function WhatsAppQRModal({ employeeId, onClose }) {
 
     const fetchQr = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/qr/${employeeId}`);
+        const res = await fetch(`\${BASE_URL}/api/qr/${employeeId}`);
         if (res.status === 404) {
             setQr(null);
             setError(null);

@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { FiMail, FiCheckCircle, FiXCircle, FiPercent, FiDownload, FiSearch } from 'react-icons/fi';
+import { BASE_URL } from '../config';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -82,7 +83,7 @@ export default function CampaignMonitoring() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/campaigns');
+        const res = await fetch('\${BASE_URL}/api/campaigns');
         const data = await res.json();
         setAllCampaigns(data);
         if (data.length > 0) {

@@ -1,7 +1,6 @@
 // frontend/src/api/employees.js
-
-const API_BASE_URL = 'http://localhost:3000/api';
-
+import { BASE_URL } from '../config'; // Import the config
+const API_BASE_URL = `${BASE_URL}/api`;
 // Fetch all employees
 export async function fetchEmployees() {
   const res = await fetch(`${API_BASE_URL}/employees`);

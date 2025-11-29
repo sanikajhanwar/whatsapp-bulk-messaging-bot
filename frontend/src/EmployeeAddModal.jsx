@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BASE_URL } from './config';
 
 export default function EmployeeAddModal({ onClose, onEmployeeCreated }) {
   const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ export default function EmployeeAddModal({ onClose, onEmployeeCreated }) {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/employees', { 
+      const response = await fetch('\${BASE_URL}/api/employees', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
