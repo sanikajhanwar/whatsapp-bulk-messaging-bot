@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment Variables & Keys
+.env
+credentials.json
+
+# Database & Sessions (These will be recreated on the server)
+employees.db
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Uploads
+uploads/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
