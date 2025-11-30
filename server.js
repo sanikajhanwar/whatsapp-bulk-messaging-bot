@@ -86,10 +86,11 @@ function initWhatsAppClient(employeeId, options = {}){
     }
   });
 
-  const initializationPromise = new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
+  const timeout = setTimeout(() => {
       console.error(`Initialization timed out for ${employeeId}. Destroying client.`);
-      client.destroy(); // <-- FIX: Destroy client on timeout
+      try {
+          client.destroy().catch(() => {}); // Catch destroy errors
+      } catch (e) { /* ignore */ }
       client.removeAllListeners();
       reject(new Error(`Initialization timed out for ${employeeId} after 3 minutes.`));
     }, 180000);
@@ -778,12 +779,21 @@ const server = app.listen(port, () => {
 async function shutdownClient(employeeId) {
   if (clients[employeeId]) {
     try {
-      await clients[employeeId].destroy(); // Properly closes Puppeteer browser
+      // Check if pupBrowser exists before trying to close it
+      if (clients[employeeId].pupBrowser) {
+        await clients[employeeId].destroy();
+      } else {
+        // If pupBrowser is null, just manually remove listeners to be safe
+        clients[employeeId].removeAllListeners();
+      }
       console.log(`Client for ${employeeId} shutdown cleanly.`);
     } catch (err) {
-      console.error(`Error shutting down client ${employeeId}:`, err);
+      console.error(`Error shutting down client ${employeeId}:`, err.message);
+    } finally {
+      // Always remove the reference
+      delete clients[employeeId];
+      delete qrCodes[employeeId]; // Also clear any stale QR codes
     }
-    delete clients[employeeId];
   }
 }
 
