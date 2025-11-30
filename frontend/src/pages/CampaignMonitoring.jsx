@@ -83,7 +83,7 @@ export default function CampaignMonitoring() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const res = await fetch('\${BASE_URL}/api/campaigns');
+        const res = await fetch(`\${BASE_URL}/api/campaigns`);
         const data = await res.json();
         setAllCampaigns(data);
         if (data.length > 0) {
