@@ -76,35 +76,43 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // --- WhatsApp Client Management ---
 
-function initWhatsAppClient(employeeId, options = {}){
-    console.log(`--- Starting new initialization for ${employeeId} ---`);
-  const client = new Client({
-    authStrategy: new LocalAuth({ clientId: employeeId }),
-    puppeteer: {
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
-  });
+function initWhatsAppClient(employeeId, options = {}) {
+  console.log(`--- Starting new initialization for ${employeeId} ---`);
 
-  const timeout = setTimeout(() => {
+  // 1. Create the Promise wrapper
+  const initializationPromise = new Promise((resolve, reject) => {
+    const client = new Client({
+      authStrategy: new LocalAuth({
+        clientId: employeeId
+      }),
+      puppeteer: {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      }
+    });
+
+    const timeout = setTimeout(() => {
       console.error(`Initialization timed out for ${employeeId}. Destroying client.`);
       try {
-          client.destroy().catch(() => {}); // Catch destroy errors
-      } catch (e) { /* ignore */ }
+        client.destroy().catch(() => {}); // Catch destroy errors
+      } catch (e) {
+        /* ignore */ }
       client.removeAllListeners();
       reject(new Error(`Initialization timed out for ${employeeId} after 3 minutes.`));
     }, 180000);
 
-  const readyListener = async () => { // Make the listener async
-  clearTimeout(timeout);
-  console.log(`WhatsApp client ready for ${employeeId}`);
-  delete qrCodes[employeeId];
-  clients[employeeId] = client;
-  db.updateEmployee(employeeId, { enabled: 1 }).catch(console.error);
-  resolve(client);
+    const readyListener = async () => {
+      clearTimeout(timeout);
+      console.log(`WhatsApp client ready for ${employeeId}`);
+      delete qrCodes[employeeId];
+      clients[employeeId] = client;
+      db.updateEmployee(employeeId, {
+        enabled: 1
+      }).catch(console.error);
+      resolve(client);
 
-  // --- NEW LOGIC: Only run for new employees ---
-  if (options.isNewEmployee) {
+      // --- NEW LOGIC: Only run for new employees ---
+      if (options.isNewEmployee) {
         console.log(`New employee detected. Starting automatic group sync for ${employeeId}...`);
         try {
           // Run the group sync
@@ -119,24 +127,26 @@ function initWhatsAppClient(employeeId, options = {}){
         }
       }
     };
-    
+
     const qrListener = (qr) => {
-        qrcode.generate(qr, { small: true });
-        qrCodes[employeeId] = qr;
-        console.log(`QR code generated for ${employeeId}`);
+      qrcode.generate(qr, {
+        small: true
+      });
+      qrCodes[employeeId] = qr;
+      console.log(`QR code generated for ${employeeId}`);
     };
 
     const authFailureListener = (msg) => {
       clearTimeout(timeout);
       console.error(`Auth failure for ${employeeId}. Destroying client.`, msg);
-      client.destroy(); // <-- FIX: Destroy client on auth failure
+      client.destroy();
       reject(new Error(`Authentication failure for ${employeeId}`));
     };
-    
+
     const disconnectedListener = (reason) => {
-        console.log(`WhatsApp client disconnected for ${employeeId}: ${reason}`);
-        delete clients[employeeId];
-        clientInitializationPromises.delete(employeeId);
+      console.log(`WhatsApp client disconnected for ${employeeId}: ${reason}`);
+      delete clients[employeeId];
+      clientInitializationPromises.delete(employeeId);
     };
 
     client.once('ready', readyListener);
@@ -146,21 +156,22 @@ function initWhatsAppClient(employeeId, options = {}){
 
     client.initialize().catch(err => {
       console.error(`client.initialize() failed for ${employeeId}. Destroying client.`, err);
-      client.destroy(); // <-- FIX: Destroy client on initialize error
+      client.destroy();
       clearTimeout(timeout);
       reject(err);
     });
   });
 
+  // 2. Handle the promise safely
   const safePromise = initializationPromise.catch(err => {
     // The error is logged here, at the source.
     console.error(`Client initialization failed for ${employeeId}: ${err.message}`);
     return null; // Instead of rejecting, resolve with null.
   });
-  
+
   clientInitializationPromises.set(employeeId, safePromise);
   safePromise.finally(() => {
-      clientInitializationPromises.delete(employeeId);
+    clientInitializationPromises.delete(employeeId);
   });
 
   return safePromise;
