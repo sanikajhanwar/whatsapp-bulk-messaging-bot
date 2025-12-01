@@ -83,7 +83,8 @@ export default function CampaignMonitoring() {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const res = await fetch(`\${BASE_URL}/api/campaigns`);
+       // CORRECT (Using backticks ` `)
+const res = await fetch(`${BASE_URL}/api/campaigns`);
         const data = await res.json();
         setAllCampaigns(data);
         if (data.length > 0) {
@@ -106,7 +107,8 @@ export default function CampaignMonitoring() {
     setLoading(true);
     const fetchSingleLog = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/message-log?campaignId=${singleCampaignId}`);
+        // CORRECT
+const res = await fetch(`${BASE_URL}/api/message-log?campaignId=${singleCampaignId}`);
         const data = await res.json();
         setMessageLog(data);
       } catch (err) { console.error("Failed to fetch single log:", err); }
@@ -141,7 +143,8 @@ export default function CampaignMonitoring() {
     }
     setLoading(true);
     try {
-        const res = await fetch('http://localhost:3000/api/message-logs/bulk', {
+        // CORRECT
+const res = await fetch(`${BASE_URL}/api/message-logs/bulk`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ campaignIds: Array.from(selectedCampaignIds) })
